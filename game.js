@@ -13,9 +13,11 @@ btnright = false;
 speed = 3;
 score = 0;
 vida = 0;
+highscore = 0
+
 
 //Carregar Placar
-const scoreText = new PIXI.Text("Pontos: 0")
+const scoreText = new PIXI.Text("pontos: 0")
 scoreText.style = new PIXI.TextStyle({
     dropShadow: true,
     dropShadowAlpha: 0.2,
@@ -26,9 +28,11 @@ scoreText.style = new PIXI.TextStyle({
     fontVariant: "small-caps",
     fontWeight: "bold"
 })
+scoreText.x += 10
+scoreText.y += 10
 app.stage.addChild(scoreText)
 
-function setScore(){
+function setScore() {
     scoreText.text = ("Score: " + score);
 }
 
@@ -48,11 +52,11 @@ speedball = 3;
 
 //set audios
 var pointSound = new Howl({
-    src: ['../assets/sounds/point.mp3']
-  });
+    src: ['../assets/point.mp3']
+});
 var gameOverSound = new Howl({
-    src: ['../assets/sounds/gameover2.mp3']
-  });
+    src: ['../assets/gameover2.mp3']
+});
 Howler.volume(0.05)
 
 
@@ -64,11 +68,12 @@ containerbricks.pivot.y = containerbricks.height / 2;
 containerbricks.interactiveChildren = true
 
 const menu = new PIXI.Container();
-menu.x = app.screen.height/2;
-menu.y = app.screen.height/2;
-menu.pivot.x = menu.width / 2;
+menu.pivot.x = menu.width + 100;
 menu.pivot.y = menu.height / 2;
+menu.x = app.screen.height / 2;
+menu.y = app.screen.height / 2;
 menu.interactiveChildren = true
+menu.visible = false
 
 let bricks1 = PIXI.Texture.from('../assets/brick1.png');
 let bricks2 = PIXI.Texture.from('../assets/brick2.png');
@@ -133,44 +138,95 @@ function drawBrick(fase) {
             brick.interactive = true;
             containerbricks.addChild(brick)
             mapa.push(brick)
-        } 
+        }
         else if (bricktype == 2) {
-                const brick = new PIXI.Sprite(bricks2)
-                brick.anchor.set(0.5)
-                brick.x = (i % 9) * 45
-                brick.y = Math.floor(i / 9) * 22;
-                brick.interactive = true;
-                containerbricks.addChild(brick)
-                mapa.push(brick)
-            }
+            const brick = new PIXI.Sprite(bricks2)
+            brick.anchor.set(0.5)
+            brick.x = (i % 9) * 45
+            brick.y = Math.floor(i / 9) * 22;
+            brick.interactive = true;
+            containerbricks.addChild(brick)
+            mapa.push(brick)
+        }
         else if (bricktype == 3) {
-                const brick = new PIXI.Sprite(bricks3)
-                brick.anchor.set(0.5)
-                brick.x = (i % 9) * 45
-                brick.y = Math.floor(i / 9) * 22;
-                brick.interactive = true;
-                containerbricks.addChild(brick)
-                mapa.push(brick)
-            }
+            const brick = new PIXI.Sprite(bricks3)
+            brick.anchor.set(0.5)
+            brick.x = (i % 9) * 45
+            brick.y = Math.floor(i / 9) * 22;
+            brick.interactive = true;
+            containerbricks.addChild(brick)
+            mapa.push(brick)
+        }
     }
 }
 drawBrick(fases.mapa3);
 
 // Menu
-function Menu(score){
-    const menuText = new PIXI.Text("Pontos: 0")
+function Menu() {
+    const menuText = new PIXI.Text("Game Over")
     menuText.style = new PIXI.TextStyle({
-    dropShadow: true,
-    dropShadowAlpha: 0.2,
-    dropShadowDistance: 4,
-    dropShadowBlur: 3,
-    fill: "#fff",
-    fontSize: 22,
-    fontVariant: "small-caps",
-    fontWeight: "bold"
-})
-app.menu.addChild(menuText)
+        dropShadow: true,
+        dropShadowAlpha: 0.2,
+        dropShadowDistance: 4,
+        dropShadowBlur: 3,
+        fill: "#fff",
+        fontSize: 40,
+        fontVariant: "small-caps",
+        fontWeight: "bold"
+    })
+    menu.x = app.screen.width / 2
+    menu.y = app.screen.height / 2
+    menu.cursor = 'pointer';
+    menu.interactive = true
 
+    const menuSubText = new PIXI.Text("click to restart")
+    menuSubText.style = new PIXI.TextStyle({
+        dropShadow: true,
+        dropShadowAlpha: 0.2,
+        dropShadowDistance: 4,
+        dropShadowBlur: 3,
+        fill: "#fff",
+        fontSize: 15,
+        fontVariant: "small-caps",
+        fontWeight: "bold"
+    })
+    menuSubText.anchor.set(0.5)
+    menuSubText.y += 50
+    menuSubText.x += menuText.width / 2
+
+    const highScoreText = new PIXI.Text("HIGH SCORE " + highscore)
+    highScoreText.style = new PIXI.TextStyle({
+        dropShadow: true,
+        dropShadowAlpha: 0.2,
+        dropShadowDistance: 4,
+        dropShadowBlur: 3,
+        fill: "#fff",
+        fontSize: 20,
+        fontVariant: "small-caps",
+        fontWeight: "bold"
+    })
+    highScoreText.anchor.set(0.5)
+    highScoreText.y += menuSubText.height + 50
+    highScoreText.x += menuText.width / 2
+
+    menu.addChild(menuText)
+    menu.addChild(menuSubText)
+    menu.addChild(highScoreText)
+
+    highScoreText.text = (score.value);
+}
+Menu();
+
+function Restart() {
+    for (i = 0; i < mapa.length; i++) {
+        if (mapa[i].visible == false) {
+            mapa[i].visible = true
+        }
+    }
+    score = 0
+    ball.x = app.screen.width / 2;
+    ball.y = app.screen.height - 56;
+    menu.visible = false
 }
 
 // events
@@ -211,23 +267,22 @@ function moveBall(delta) {
     if (colisao(ball, player)) {
         ball.vy *= -1;
         ball.vx *= -1;
-        speedball+=0.5
+        speedball += 0.5
     } else
         if (ball.x <= 0 || ball.x >= 500) {
             ball.vy *= 1;
             ball.vx *= -1;
-    } else
-        if (ball.y <= 0 || ball.y >= 600) {
-            ball.vy *= -1;
-            ball.vx *=  1;
-        }
+        } else
+            if (ball.y <= 0) {
+                ball.vy *= -1;
+                ball.vx *= 1;
+            }
 }
 function winLose() {
     if (ball.y >= 600) {
         gameOverSound.play()
-        alert('Restart!')
-        ball.x = app.screen.width / 2;
-        ball.y = app.screen.height - 56;
+        menu.visible = true
+        menu.on("pointerdown", Restart)
     }
 }
 function hitBrick() {
@@ -236,7 +291,7 @@ function hitBrick() {
             if (colisao(ball, mapa[i])) {
                 ball.vy = ball.vy * -1;
                 mapa[i].visible = false
-                score += Math.floor(10.5*speedball)
+                score += Math.floor(10.5 * speedball)
                 pointSound.play()
             }
         }
