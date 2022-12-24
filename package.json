@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@pixi/sound": "^5.0.0",
+    "howler": "^2.2.3"
+  }
+}
