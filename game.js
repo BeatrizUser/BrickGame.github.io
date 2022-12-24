@@ -33,12 +33,12 @@ function setScore(){
 }
 
 // set player and ball
-let player = PIXI.Sprite.from('./assets/player.png');
+let player = PIXI.Sprite.from('../assets/player.png');
 player.anchor.set(0.5);
 player.x = app.screen.width / 2;
 player.y = app.screen.height - 40;
 
-let ball = PIXI.Sprite.from('./assets/ball.png');
+let ball = PIXI.Sprite.from('../assets/ball.png');
 ball.anchor.set(0.5);
 ball.x = app.screen.width / 2;
 ball.y = app.screen.height - 60;
@@ -48,10 +48,10 @@ speedball = 3;
 
 //set audios
 var pointSound = new Howl({
-    src: ['./assets/sounds/point.mp3']
+    src: ['../assets/sounds/point.mp3']
   });
 var gameOverSound = new Howl({
-    src: ['./assets/sounds/gameover2.mp3']
+    src: ['../assets/sounds/gameover2.mp3']
   });
 Howler.volume(0.05)
 
@@ -70,9 +70,9 @@ menu.pivot.x = menu.width / 2;
 menu.pivot.y = menu.height / 2;
 menu.interactiveChildren = true
 
-let bricks1 = PIXI.Texture.from('./assets/brick1.png');
-let bricks2 = PIXI.Texture.from('./assets/brick2.png');
-let bricks3 = PIXI.Texture.from('./assets/brick3.png');
+let bricks1 = PIXI.Texture.from('../assets/brick1.png');
+let bricks2 = PIXI.Texture.from('../assets/brick2.png');
+let bricks3 = PIXI.Texture.from('../assets/brick3.png');
 
 app.stage.addChild(player);
 app.stage.addChild(ball);
