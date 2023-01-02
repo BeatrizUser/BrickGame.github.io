@@ -14,6 +14,9 @@ speed = 3;
 score = 0;
 vida = 0;
 highscore = 0
+colisoes = 0
+tamanho = 0
+power = Math.floor((Math.random()*10)+1)
 
 
 //Carregar Placar
@@ -50,14 +53,24 @@ ball.vx = 1;
 ball.vy = 1;
 speedball = 3;
 
+let powerenergy = PIXI.Sprite.from('../assets/energy.png');
+powerenergy.visible = false
+powerenergy.anchor.set(0.5);
+
 //set audios
 var pointSound = new Howl({
-    src: ['../assets/point.mp3']
+    src: ['../assets/sounds/point.mp3']
 });
 var gameOverSound = new Howl({
-    src: ['../assets/gameover2.mp3']
+    src: ['../assets/sounds/gameover3.mp3']
 });
-Howler.volume(0.05)
+var energySound = new Howl({
+    src: ['../assets/sounds/energy.mp3']
+});
+var plusSound = new Howl({
+    src: ['../assets/sounds/plussize.mp3']
+});
+Howler.volume(0.02)
 
 
 const containerbricks = new PIXI.Container();
@@ -78,6 +91,8 @@ menu.visible = false
 let bricks1 = PIXI.Texture.from('../assets/brick1.png');
 let bricks2 = PIXI.Texture.from('../assets/brick2.png');
 let bricks3 = PIXI.Texture.from('../assets/brick3.png');
+let energy = PIXI.Texture.from('../assets/energy.png');
+let plusSize = PIXI.Texture.from('../assets/plusSize.png');
 
 app.stage.addChild(player);
 app.stage.addChild(ball);
@@ -92,7 +107,7 @@ app.ticker.add(gameloop);
 let fases = {
     column: 9,
     row: 7,
-    size: 54,
+    size: 63,
     mapa1:
         [
             0, 0, 2, 2, 0, 2, 2, 0, 0,
@@ -105,7 +120,7 @@ let fases = {
         ],
     mapa2:
         [
-            1, 2, 1, 1, 1, 2, 1, 2, 1,
+            1, 2, 1, 2, 1, 2, 1, 2, 1,
             0, 1, 2, 1, 2, 1, 2, 1, 0,
             0, 0, 1, 2, 1, 2, 1, 0, 0,
             0, 0, 0, 1, 2, 1, 0, 0, 0,
@@ -123,11 +138,18 @@ let fases = {
             2, 3, 2, 0, 0, 0, 2, 3, 2,
             0, 2, 0, 0, 0, 0, 0, 2, 0,
         ],
-    //0=nada 1=verde 2=roxo 3=rosa 4=amarelo
+    //BRICKS COLOR SET => 0=nada 1=verde 2=roxo 3=rosa 4=amarelo
+    //POWER SET = > 0.1=energy 0.2=plusSize
 }
 
 const mapa = [];
 function drawBrick(fase) {
+    for(i=0; i< fase.length; i++){
+        if(fase[i] != 0){
+            tamanho++
+        }
+    }
+    console.log(tamanho)
     for (i = 0; i < fase.length; i++) {
         bricktype = fase[i]
         if (bricktype == 1) {
@@ -159,7 +181,7 @@ function drawBrick(fase) {
         }
     }
 }
-drawBrick(fases.mapa3);
+drawBrick(fases.mapa2);
 
 // Menu
 function Menu() {
@@ -224,9 +246,33 @@ function Restart() {
         }
     }
     score = 0
+    speedball = 3
     ball.x = app.screen.width / 2;
     ball.y = app.screen.height - 56;
+    ball.vy *= -1;
+    ball.vx *= -1;
     menu.visible = false
+}
+function getPower(){
+    if(colisoes == power){
+        colisoes++
+        powerenergy.x = ball.x
+        powerenergy.y = ball.y
+        powerenergy.visible = true
+        app.stage.addChild(powerenergy)
+        powerenergy.interactive = true
+    }
+    if(colisao(powerenergy, player)){
+        powerenergy.visible = false
+        colisoes = 0
+        if(energySound.playing([1]) == false){
+            energySound.play()
+        }
+    }
+}
+
+function movePower(delta){
+    powerenergy.y += 1.2
 }
 
 // events
@@ -251,13 +297,10 @@ function keysUp(e) {
 function movePlayer() {
     gameOverSound.stop()
     if (btnleft == true && player.x >= 60) {
-        player.x -= 5
+        player.x -= 10
     } else if (btnright == true && player.x <= 440) {
-        player.x += 5
+        player.x += 10
     }
-}
-function start() {
-    alert('Start!')
 }
 
 function moveBall(delta) {
@@ -267,9 +310,9 @@ function moveBall(delta) {
     if (colisao(ball, player)) {
         ball.vy *= -1;
         ball.vx *= -1;
-        speedball += 0.5
+        speedball += 0.2
     } else
-        if (ball.x <= 0 || ball.x >= 500) {
+        if (ball.x <= 0 || ball.x >= 498) {
             ball.vy *= 1;
             ball.vx *= -1;
         } else
@@ -279,8 +322,7 @@ function moveBall(delta) {
             }
 }
 function winLose() {
-    if (ball.y >= 600) {
-        gameOverSound.play()
+    if (ball.y >= 598) {
         menu.visible = true
         menu.on("pointerdown", Restart)
     }
@@ -289,28 +331,48 @@ function hitBrick() {
     for (i = 0; i < mapa.length; i++) {
         if (mapa[i].visible) {
             if (colisao(ball, mapa[i])) {
-                ball.vy = ball.vy * -1;
-                mapa[i].visible = false
-                score += Math.floor(10.5 * speedball)
-                pointSound.play()
+                if(mapa[i]._texture.textureCacheIds[0] == "../assets/energy.png"){
+                    console.log("Bateu energy")
+                    power.vy = power.vx *1;
+                    ball.vy = ball.vy * -1;
+                    mapa[i].visible = false
+                    score = ball.x0
+                    energySound.play()
+                }else
+                if(mapa[i]._texture.textureCacheIds[0] == "../assets/plusSize.png"){
+                    console.log("Bateu Plus")
+                    ball.vy = ball.vy * -1;
+                    mapa[i].visible = false
+                    score = ball.x0
+                    plusSound.play()
+                }else{
+                    ball.vy = ball.vy * -1;
+                    mapa[i].visible = false
+                    score += Math.floor(10.5 * speedball)
+                    pointSound.play()
+                }colisoes++
             }
         }
     }
 }
+
+
 function gameloop() {
     movePlayer();
     moveBall();
     hitBrick();
     setScore();
     winLose();
+    getPower();
+    movePower()
 }
 
 function colisao(a, b) {
     const obj1 = a.getBounds();
     const obj2 = b.getBounds();
 
-    return obj1.x < obj2.x + obj2.width
+    return obj1.x < obj2.x + obj2.width +1
         && obj1.x + obj1.width > obj2.x
-        && obj1.y < obj2.y + obj2.height
+        && obj1.y < obj2.y + obj2.height +1
         && obj1.y + obj1.height > obj2.y;
 }
