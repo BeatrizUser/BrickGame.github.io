@@ -16,8 +16,7 @@ vida = 0;
 highscore = 0
 colisoes = 0
 tamanho = 0
-power = Math.floor((Math.random()*10)+1)
-
+power = 0
 
 //Carregar Placar
 const scoreText = new PIXI.Text("pontos: 0")
@@ -56,6 +55,10 @@ speedball = 3;
 let powerenergy = PIXI.Sprite.from('../assets/energy.png');
 powerenergy.visible = false
 powerenergy.anchor.set(0.5);
+
+let plusenergy = PIXI.Sprite.from('../assets/plusSize.png');
+plusenergy.visible = false
+plusenergy.anchor.set(0.5);
 
 //set audios
 var pointSound = new Howl({
@@ -256,23 +259,42 @@ function Restart() {
 function getPower(){
     if(colisoes == power){
         colisoes++
-        powerenergy.x = ball.x
-        powerenergy.y = ball.y
-        powerenergy.visible = true
-        app.stage.addChild(powerenergy)
-        powerenergy.interactive = true
+        rest = power % 2
+        if(rest == 0){
+            powerenergy.x = ball.x
+            powerenergy.y = ball.y
+            powerenergy.visible = true
+            app.stage.addChild(powerenergy)
+            powerenergy.interactive = true
+        }else{
+            plusenergy.x = ball.x
+            plusenergy.y = ball.y
+            plusenergy.visible = true
+            app.stage.addChild(plusenergy)
+            plusenergy.interactive = true
+        }
     }
     if(colisao(powerenergy, player)){
         powerenergy.visible = false
         colisoes = 0
         if(energySound.playing([1]) == false){
             energySound.play()
+            power = 1
+        }
+    }else
+    if(colisao(plusenergy, player)){
+        plusenergy.visible = false
+        colisoes = 0
+        if(plusSound.playing([1]) == false){
+            plusSound.play()
+            power = 2
         }
     }
 }
 
 function movePower(delta){
     powerenergy.y += 1.2
+    plusenergy.y += 1.2
 }
 
 // events
