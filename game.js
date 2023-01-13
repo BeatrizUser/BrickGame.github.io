@@ -16,6 +16,7 @@ vida = 0;
 highscore = 0
 colisoes = 0
 tamanho = 0
+contador = 0
 power = 0
 
 //Carregar Placar
@@ -141,6 +142,16 @@ let fases = {
             2, 3, 2, 0, 0, 0, 2, 3, 2,
             0, 2, 0, 0, 0, 0, 0, 2, 0,
         ],
+    mapa4:
+        [
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0,
+        ],
     //BRICKS COLOR SET => 0=nada 1=verde 2=roxo 3=rosa 4=amarelo
     //POWER SET = > 0.1=energy 0.2=plusSize
 }
@@ -184,7 +195,7 @@ function drawBrick(fase) {
         }
     }
 }
-drawBrick(fases.mapa2);
+drawBrick(fases.mapa1);
 
 // Menu
 function Menu() {
@@ -287,8 +298,9 @@ function getPower(){
         colisoes = 0
         if(plusSound.playing([1]) == false){
             plusSound.play()
-            power = 2
+            power = 2 
         }
+        player.width *= 1.01
     }
 }
 
@@ -318,9 +330,9 @@ function keysUp(e) {
 // funcoes de movimento do player
 function movePlayer() {
     gameOverSound.stop()
-    if (btnleft == true && player.x >= 60) {
+    if (btnleft == true && player.x >= player.width/2 + 10) {
         player.x -= 10
-    } else if (btnright == true && player.x <= 440) {
+    } else if (btnright == true && player.x <= (502 - player.width/2 - 10)) {
         player.x += 10
     }
 }
@@ -332,7 +344,7 @@ function moveBall(delta) {
     if (colisao(ball, player)) {
         ball.vy *= -1;
         ball.vx *= -1;
-        speedball += 0.2
+        speedball += 0
     } else
         if (ball.x <= 0 || ball.x >= 498) {
             ball.vy *= 1;
@@ -344,9 +356,15 @@ function moveBall(delta) {
             }
 }
 function winLose() {
+    faseAtual = fases.mapa2
     if (ball.y >= 598) {
         menu.visible = true
         menu.on("pointerdown", Restart)
+    }
+    if(tamanho == contador){
+        console.log("Ganhou!")
+        drawBrick(faseAtual);
+        contador=0
     }
 }
 function hitBrick() {
@@ -372,7 +390,9 @@ function hitBrick() {
                     mapa[i].visible = false
                     score += Math.floor(10.5 * speedball)
                     pointSound.play()
-                }colisoes++
+                }
+                colisoes++
+                contador++
             }
         }
     }
